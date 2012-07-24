@@ -1,4 +1,7 @@
 import os
+import json
+from os.path import join
+import Image
 
 from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
@@ -26,3 +29,26 @@ def redactor_upload(request, upload_to=None, form_class=ImageForm, response=lamb
             response(file_.name, os.path.join(settings.MEDIA_URL, real_path))
         )
     return HttpResponse(status=403)
+
+def redactor_json(request,upload_to=None):
+    if not upload_to:
+        upload_to = settings.REDACTOR_UPLOAD
+    images= []
+    for root, subFolders, files in os.walk(join(settings.MEDIA_ROOT, upload_to)):
+        for file in files:
+            if file.endswith(u'.thumbnail.jpg'):
+                continue
+            try:
+                image = u"{0}{1}{2}".format(settings.MEDIA_URL,upload_to,file)
+                image_file = u"{0}/{1}{2}".format(settings.MEDIA_ROOT,upload_to,file)
+                thumb = u"{0}{1}{2}.thumbnail.jpg".format(settings.MEDIA_URL,upload_to,file)
+                thumb_file = u"{0}/{1}{2}.thumbnail.jpg".format(settings.MEDIA_ROOT,upload_to,file)
+                if not os.path.exists(thumb):
+                    im = Image.open(image_file)
+                    im.thumbnail((100,74,), Image.ANTIALIAS)
+                    im.save(thumb_file, "JPEG")
+                images.append({'thumb':thumb,'image':image})
+                print(files)
+            except IOError:
+                continue
+    return HttpResponse(json.dumps(images),mimetype="application/json")
