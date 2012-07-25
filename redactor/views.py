@@ -30,6 +30,7 @@ def redactor_upload(request, upload_to=None, form_class=ImageForm, response=lamb
         )
     return HttpResponse(status=403)
 
+@user_passes_test(lambda u: u.is_staff)
 def redactor_json(request,upload_to=None):
     if not upload_to:
         upload_to = settings.REDACTOR_UPLOAD

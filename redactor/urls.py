@@ -1,3 +1,5 @@
+import json
+
 from django.conf.urls.defaults import url, patterns
 
 from redactor.views import redactor_upload,redactor_json
@@ -12,8 +14,8 @@ urlpatterns = patterns('',
 
     url('^upload/file/(?P<upload_to>.*)', redactor_upload, {
         'form_class': FileForm,
-        'response': lambda name, url: '<a href="%s">%s</a>' % (url, name),
-    }, name='redactor_upload_file'),
+        'response': lambda name, url: json.dumps({'filelink':url,'filename':name}),
+        }, name='redactor_upload_file'),
 
     url('^json/image/(?P<upload_to>.*)', redactor_json, name='redactor_getjson_image'),
 )

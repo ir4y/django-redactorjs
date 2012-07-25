@@ -5,7 +5,7 @@ from django.utils import simplejson as json
 from django.conf import settings
 
 
-GLOBAL_OPTIONS = getattr(settings, 'REDACTOR_OPTIONS', {})
+GLOBAL_OPTIONS = getattr(settings, 'REDACTOR_OPTIONS', {'lang': 'en'})
 
 INIT_JS = """<script type="text/javascript">
   jQuery(document).ready(function(){
@@ -21,6 +21,7 @@ class RedactorEditor(widgets.Textarea):
         js = (
             'redactor/jquery-1.7.min.js',
             'redactor/redactor.min.js',
+            'redactor/langs/{0}.js'.format(GLOBAL_OPTIONS['lang']),
         )
         css = {
             'all': (
