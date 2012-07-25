@@ -37,6 +37,7 @@ def redactor_json(request,upload_to=None):
     images= []
     for root, subFolders, files in os.walk(join(settings.MEDIA_ROOT, upload_to)):
         for file in files:
+            file = file.decode('utf-8)')
             if file.endswith(u'.thumbnail.jpg'):
                 continue
             try:
@@ -49,7 +50,6 @@ def redactor_json(request,upload_to=None):
                     im.thumbnail((100,74,), Image.ANTIALIAS)
                     im.save(thumb_file, "JPEG")
                 images.append({'thumb':thumb,'image':image})
-                print(files)
             except IOError:
                 continue
     return HttpResponse(json.dumps(images),mimetype="application/json")
