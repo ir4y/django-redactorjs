@@ -30,8 +30,9 @@ Getting started
 * Add default config in settings.py (more settings see: <http://redactorjs.com/docs/settings/>):
 
 ```
-REDACTOR_OPTIONS = {'lang': 'ru'}
-REDACTOR_UPLOAD = 'uploads/'
+REDACTOR_OPTIONS = {'lang': 'ru'} #language
+REDACTOR_UPLOAD = 'uploads/%Y/%m/%d/' #directory upload to
+IS_REDACTOR_PUBLIC = False #if uploaded files are public ?
 ```
 
 Using in model

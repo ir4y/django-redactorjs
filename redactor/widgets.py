@@ -19,7 +19,7 @@ class RedactorEditor(widgets.Textarea):
 
     class Media:
         js = (
-            'redactor/jquery-1.7.min.js',
+            'redactor/jquery-1.9.1.min.js',
             'redactor/redactor.min.js',
             'redactor/langs/{0}.js'.format(GLOBAL_OPTIONS['lang']),
         )
@@ -39,9 +39,8 @@ class RedactorEditor(widgets.Textarea):
         options = GLOBAL_OPTIONS.copy()
         options.update(self.custom_options)
         options.update({
-            'imageUpload': reverse('redactor_upload_image', kwargs={'upload_to': self.upload_to}),
-            'fileUpload': reverse('redactor_upload_file', kwargs={'upload_to': self.upload_to}),
-            'imageGetJson': reverse('redactor_getjson_image', kwargs={'upload_to': self.upload_to}),
+            'imageUpload': reverse('redactor_upload_image'),
+            'imageGetJson': reverse('redactor_getjson_image'),
         })
         return json.dumps(options)
 

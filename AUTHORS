@@ -2,10 +2,12 @@ django-redactorjs Authors
 =======================
 
 django-redactorjs was created by Igor Tokarev based on the work of Vladimir Sidorenko.
+Add pathes anf updates Ilya Beda
 
   * Igor Tokarev
   * Vladimir Sidorenko
   * Guilherme Gondim
+  * Ilya Beda
 
 
 Authors WYSIWYG Redactor

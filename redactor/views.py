@@ -1,55 +1,42 @@
-import os
 import json
-from os.path import join
-import Image
-
-from django.conf import settings
-from django.contrib.auth.decorators import user_passes_test
-from django.core.files.storage import default_storage
+from django.db.models import Q
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
+from settings import IS_REDACTOR_PUBLIC
+from models import RedaktorJsFile
 
-from redactor.forms import ImageForm
-
-
-UPLOAD_PATH = getattr(settings, 'REDACTOR_UPLOAD', 'redactor/')
+try:
+    from sorl.thumbnail import get_thumbnail
+except ImportError:
+    get_thumbnail = None
 
 
 @csrf_exempt
 @require_POST
-@user_passes_test(lambda u: u.is_staff)
-def redactor_upload(request, upload_to=None, form_class=ImageForm, response=lambda name, url: url):
-    form = form_class(request.POST, request.FILES)
-    if form.is_valid():
-        file_ = form.cleaned_data['file']
-        path = os.path.join(upload_to or UPLOAD_PATH, file_.name)
-        real_path = default_storage.save(path, file_)
-        return HttpResponse(
-            response(file_.name, os.path.join(settings.MEDIA_URL, real_path))
-        )
-    return HttpResponse(status=403)
+@login_required
+def redactor_upload(request):
+    images = []
+    for f in request.FILES.getlist("file"):
+        obj = RedaktorJsFile.objects.create(upload=f, is_image=True, owner=request.user)
+        images.append({"filelink": obj.upload.url})
+    return HttpResponse(json.dumps(images), mimetype="application/json")
 
-@user_passes_test(lambda u: u.is_staff)
-def redactor_json(request,upload_to=None):
-    if not upload_to:
-        upload_to = settings.REDACTOR_UPLOAD
-    images= []
-    for root, subFolders, files in os.walk(join(settings.MEDIA_ROOT, upload_to)):
-        for file in files:
-            file = file.decode('utf-8)')
-            if file.endswith(u'.thumbnail.jpg'):
-                continue
-            try:
-                image = u"{0}{1}{2}".format(settings.MEDIA_URL,upload_to,file)
-                image_file = u"{0}/{1}{2}".format(settings.MEDIA_ROOT,upload_to,file)
-                thumb = u"{0}{1}{2}.thumbnail.jpg".format(settings.MEDIA_URL,upload_to,file)
-                thumb_file = u"{0}/{1}{2}.thumbnail.jpg".format(settings.MEDIA_ROOT,upload_to,file)
-                if not os.path.exists(thumb):
-                    im = Image.open(image_file)
-                    im.thumbnail((100,74,), Image.ANTIALIAS)
-                    im.save(thumb_file, "JPEG")
-                images.append({'thumb':thumb,'image':image})
-            except IOError:
-                continue
-    return HttpResponse(json.dumps(images),mimetype="application/json")
+
+@login_required
+def redactor_recent_json(request):
+    def get_thumbnail_url(image):
+        if get_thumbnail:
+            return get_thumbnail(image.path, '64x64', crop='center', quality=99).url
+        return image.url
+
+    query = Q(is_image=True)
+    if not IS_REDACTOR_PUBLIC:
+        query &= Q(owner=request.user)
+
+    images = [
+        {"thumb": get_thumbnail_url(obj.upload), "image": obj.upload.url}
+        for obj in RedaktorJsFile.objects.filter(query).order_by("-date_created")[:20]
+    ]
+    return HttpResponse(json.dumps(images), mimetype="application/json")
