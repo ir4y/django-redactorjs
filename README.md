@@ -1,4 +1,3 @@
-
 django-redactorjs
 ===============
 http://github.com/TigorC/django-redactorjs
@@ -20,7 +19,7 @@ Getting started
 
 * Install django-redactorjs:
 
-``pip install django-redactorjs
+``pip install -e git+git://github.com/ir4y/django-redactorjs.git#egg=redactorjs-dev
 ``
 
 * Add `'redactor'` to INSTALLED_APPS.
